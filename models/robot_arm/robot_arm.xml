@@ -1,0 +1,204 @@
+<mujoco model="robot_arm">
+  <!-- 编译器设置：
+       - angle="radian"：角度单位使用弧度（euler参数需用弧度值）
+       - meshdir="meshes"：网格文件存放目录为"meshes"
+       - autolimits="true"：自动计算关节限位以避免自碰撞 -->
+  <compiler angle="radian" meshdir="meshes" autolimits="true"/>
+  
+  <!-- 仿真选项：
+       - integrator="implicitfast"：使用隐式快速积分器，适合实时仿真场景 -->
+  <option integrator="implicitfast"/>
+
+  <!-- 默认参数定义：通过class分组复用属性，减少冗余 -->
+  <default>
+    <default class="arm">
+      <!-- 材料属性默认值：镜面反射强度0.5，光泽度0.25 -->
+      <material specular="0.5" shininess="0.25"/>
+      
+      <!-- 关节默认属性：
+           - armature="0.1"：关节转动惯量
+           - damping="1"：关节阻尼系数
+           - type="hinge"：铰链关节（旋转关节）
+           - range="-3.14 3.14"：关节角度范围（-π到π弧度） -->
+      <joint armature="0.2" damping="1" type="hinge" range="-3.14 3.14"/>
+      
+      <!-- 执行器默认属性：
+           - dyntype="none"：无动态类型
+           - biastype="affine"：仿射动力学模型
+           - forcerange="-10 10"：执行器力输出范围（±10N） -->
+      <general dyntype="none" biastype="affine" forcerange="-10 10"/>
+      
+      <!-- 视觉几何默认属性：
+           - type="mesh"：使用网格模型
+           - contype="0"、conaffinity="0"：不参与碰撞检测
+           - group="2"：视觉分组（用于渲染过滤） -->
+      <default class="visual">
+        <geom type="mesh" contype="0" conaffinity="0" group="2"/>
+      </default>
+      
+      <!-- 碰撞几何默认属性：
+           - type="mesh"：使用网格模型
+           - group="3"：碰撞分组（用于碰撞过滤） -->
+      <default class="collision">
+        <geom type="mesh" group="3"/>
+      </default>
+    </default>
+  </default>
+
+  <!-- 资源定义：材料和网格文件 -->
+  <asset>
+    <!-- 材质定义（RGBA颜色值，A为透明度） -->
+    <material class="arm" name="white" rgba="1 1 1 1"/>          <!-- 白色 -->
+    <material class="arm" name="light_blue" rgba="0.796 0.824 0.937 1"/>  <!-- 浅蓝色 -->
+    <material class="arm" name="grey" rgba="0.753 0.753 0.753 1"/>        <!-- 灰色 -->
+    <material class="arm" name="world_grey" rgba="0.7 0.7 0.7 1"/>        <!-- 世界坐标系灰色 -->
+
+    <!-- 网格文件定义（碰撞和视觉共用，通过class区分用途） -->
+    <mesh name="base_link_mesh" file="base_link.STL"/>  <!-- 基座连杆网格 -->
+    <mesh name="link_1_mesh" file="link_1.STL"/>        <!-- 连杆1网格 -->
+    <mesh name="link_2_mesh" file="link_2.STL"/>        <!-- 连杆2网格 -->
+    <mesh name="link_3_mesh" file="link_3.STL"/>        <!-- 连杆3网格 -->
+    <mesh name="link_4_mesh" file="link_4.STL"/>        <!-- 连杆4网格 -->
+    <mesh name="link_5_mesh" file="link_5.STL"/>        <!-- 连杆5网格 -->
+    <mesh name="link_6_mesh" file="link_6.STL"/>        <!-- 连杆6网格 -->
+  </asset>
+
+  <!-- 世界体：包含所有物理实体的根节点 -->
+  <worldbody>
+    <!-- 光源设置：
+         - name="top"：光源名称
+         - pos="0 0 2"：光源位置（坐标原点上方2米）
+         - mode="trackcom"：跟踪物体中心（使光照始终面向场景中心） -->
+    <light name="top" pos="0 0 2" mode="trackcom"/>
+    
+      <!-- 基座链接（机器人根节点）：无额外旋转，省略euler（默认0 0 0） -->
+      <body name="base_link" childclass="arm">
+        <!-- 惯性参数：对角线惯性矩阵（0.1,0.1,0.1），满足正定要求 -->
+        <inertial mass="0.375659879307536" 
+          pos="-0.0388232107706779 3.72396888084995E-05 0.0209550646938778"
+          fullinertia="0.1 0.1 0.1 0 0 0"/>
+        
+        <!-- 基座视觉/碰撞几何 -->
+        <geom mesh="base_link_mesh" material="white" class="visual"/>
+        <geom mesh="base_link_mesh" class="collision"/>
+        
+        <!-- 关节1和link_1：原rpy="0 0 -1.5708" → MuJoCo euler（Z-Y-X）对应"0 0 -1.5708"（仅绕Z轴转） -->
+        <body name="link_1" pos="0 0 0.0503" euler="0 0 -1.5708">
+          <!-- 关节1：绕Z轴旋转，范围±π -->
+          <joint name="joint_1" axis="0 0 1" range="-3.14 3.14"/>
+          
+          <!-- 连杆1惯性参数 -->
+          <inertial mass="0.156385897016896"
+            pos="-5.63085350857487E-06 -0.00560351869705136 0.0318181204775903"
+            fullinertia="0.1 0.1 0.1 0 0 0"/>
+          
+          <!-- 连杆1视觉/碰撞几何 -->
+          <geom mesh="link_1_mesh" material="white" class="visual"/>
+          <geom mesh="link_1_mesh" class="collision"/>
+          
+          <!-- 关节2和link_2：原rpy="1.5708 -1.5651 0" → 转换为MuJoCo euler（Z-Y-X）："0 -1.5651 1.5708"
+               （URDF的X→Y→Z 对应 MuJoCo的Z→Y→X，需调整角度顺序：原α=1.5708,X；β=-1.5651,Y；γ=0,Z → euler="γ β α"） -->
+          <body name="link_2" pos="0 0.0185 0.035" euler="1.5708 0 1.5708">
+            <!-- 关节2：绕-Z轴旋转，范围±π/2 -->
+            <joint name="joint_2" axis="0 0 -1" range="-1.57 1.57"/>
+            
+            <!-- 连杆2惯性参数 -->
+            <inertial mass="0.181748007640186"
+              pos="0.121025012481005 -1.62375377122692E-05 -0.0242549258047306"
+              fullinertia="0.1 0.1 0.1 0 0 0"/>
+            
+            <!-- 连杆2视觉/碰撞几何 -->
+            <geom mesh="link_2_mesh" material="light_blue" class="visual"/>
+            <geom mesh="link_2_mesh" class="collision"/>
+            
+            <!-- 关节3和link_3：无额外旋转，省略euler（默认0 0 0） -->
+            <body name="link_3" pos="0.15 0 -0.0044">
+              <!-- 关节3：绕Z轴旋转，范围±2.57 -->
+              <joint name="joint_3" axis="0 0 1" range="-2.57 2.57"/>
+              
+              <!-- 连杆3惯性参数 -->
+              <inertial mass="0.166528397754264"
+                pos="0.119206812196477 -1.81795165103412E-05 0.0215976443773329"
+                fullinertia="0.1 0.1 0.1 0 0 0"/>
+              
+              <!-- 连杆3视觉/碰撞几何 -->
+              <geom mesh="link_3_mesh" material="light_blue" class="visual"/>
+              <geom mesh="link_3_mesh" class="collision"/>
+              
+              <!-- 关节4和link_4：原rpy="0 0 -1.5651" → MuJoCo euler对应"0 0 -1.5651"（仅绕Z轴转） -->
+              <body name="link_4" pos="0.15 0 0.0035" euler="0 0 -1.5708">
+                <!-- 关节4：绕-Z轴旋转，范围±π -->
+                <joint name="joint_4" axis="0 0 -1" range="-3.14 3.14"/>
+                
+                <!-- 连杆4惯性参数 -->
+                <inertial mass="0.109264788641728"
+                  pos="-1.48574454818078E-08 0.0128323541378314 -0.033157535804722"
+                  fullinertia="0.1 0.1 0.1 0 0 0"/>
+                
+                <!-- 连杆4视觉/碰撞几何 -->
+                <geom mesh="link_4_mesh" material="white" class="visual"/>
+                <geom mesh="link_4_mesh" class="collision"/>
+                
+                <!-- 关节5和link_5：原rpy="1.5708 0 0" → 转换为MuJoCo euler（Z-Y-X）："0 0 1.5708"
+                     （原绕X轴转1.5708 → euler顺序调整后，仅需保留X轴角度在最后一位） -->
+                <body name="link_5" pos="0 0.033 -0.03554" euler="1.5708 0 0">
+                  <!-- 关节5：绕-Z轴旋转，范围±π -->
+                  <joint name="joint_5" axis="0 0 -1" range="-3.14 3.14"/>
+                  
+                  <!-- 连杆5惯性参数 -->
+                  <inertial mass="0.113182480171704"
+                    pos="-1.43431724468433E-08 0.0127862361544324 -0.0332400019515298"
+                    fullinertia="0.1 0.1 0.1 0 0 0"/>
+                  
+                  <!-- 连杆5视觉/碰撞几何 -->
+                  <geom mesh="link_5_mesh" material="white" class="visual"/>
+                  <geom mesh="link_5_mesh" class="collision"/>
+                  
+                  <!-- 关节6和link_6：原rpy="-1.5708 0 0" → 转换为MuJoCo euler（Z-Y-X）："0 0 -1.5708" -->
+                  <body name="link_6" pos="0 0.033 -0.03554" euler="-1.5708 0 0">
+                    <!-- 关节6：绕Z轴旋转，范围±π -->
+                    <joint name="joint_6" axis="0 0 1" range="-3.14 3.14"/>
+                    
+                    <!-- 连杆6惯性参数：无多余空格，格式正确 -->
+                    <inertial mass="0.243270290247563"
+                      pos="-0.000202191869838614 0.00409019537321847 0.0546698484271652"
+                      fullinertia="0.1 0.1 0.1 0 0 0"/>
+                    
+                    <!-- 连杆6视觉/碰撞几何 -->
+                    <geom mesh="link_6_mesh" material="grey" class="visual"/>
+                    <geom mesh="link_6_mesh" class="collision"/>
+                    
+                    <!-- 抓取点标记：无额外旋转，省略euler -->
+                    <body name="grasp_point" pos="0 -0.0075 0.1409">
+                      <site name="grasp_site" size="0.01" group="3"/> <!-- size为标记点大小（0.01m） -->
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+  </worldbody>
+
+  <!-- 执行器定义：forcerange统一为±10N（符合力范围物理意义） -->
+  <actuator>
+    <general class="arm" name="actuator1" joint="joint_1" gainprm="1000" biasprm="0 -1000 -100" forcerange="-10 10"/>
+    <general class="arm" name="actuator2" joint="joint_2" gainprm="1000" biasprm="0 -1000 -100" forcerange="-10 10"/>
+    <general class="arm" name="actuator3" joint="joint_3" gainprm="1000" biasprm="0 -1000 -100" forcerange="-10 10"/>
+    <general class="arm" name="actuator4" joint="joint_4" gainprm="1000" biasprm="0 -1000 -100" forcerange="-10 10"/>
+    <general class="arm" name="actuator5" joint="joint_5" gainprm="1000" biasprm="0 -1000 -100" forcerange="-10 10"/>
+    <general class="arm" name="actuator6" joint="joint_6" gainprm="1000" biasprm="0 -1000 -100" forcerange="-10 10"/>
+  </actuator>
+
+
+  <!-- 关键帧：预设home姿态（关节角度和控制量均为0） -->
+  <keyframe>
+    <key name="home" qpos="0 0 0 0 0 0" ctrl="0 0 0 0 0 0"/>
+  </keyframe>
+
+  <!-- 碰撞排除规则：可根据需要添加 -->
+  <contact>
+    <!-- 示例：<exclude body1="link_1" body2="link_3"/> -->
+  </contact>
+</mujoco>
