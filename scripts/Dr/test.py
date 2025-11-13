@@ -3,7 +3,7 @@
 import DrEmpower as dr
 import time 
 
-id_num = 7 #关节电机ID号
+id_num = 3 #关节电机ID号
 
 def motor_control():
 
@@ -11,16 +11,16 @@ def motor_control():
     # dr.set_id(0, id_num)
 
     '''设置零点位置'''
-    dr.set_zero_position(id_num)
+    # dr.set_zero_position(id_num)
 
     '''设置临时零点位置'''
     # dr.set_zero_position_temp(id_num)
 
     '''单个绝对角度控制'''
-    # dr.set_angle(id_num=id_num, angle=0, speed=2, param=10, mode=1)
+    # dr.set_angle(id_num=id_num, angle=60, speed=2, param=10, mode=1)
 
     '''多个绝对角度控制'''
-    # dr.set_angles(id_list=[1,2,3,4,5,6], angle_list=[0,0,0,0,0,0], speed=10, param=10, mode=1)
+    # dr.set_angles(id_list=[1,2,3,4,5,6], angle_list=[0,0,0,0,0,0], speed=2, param=10, mode=1)
 
     '''单个关节相对/步进角度控制'''
     # dr.step_angle(id_num=id_num, angle=10, speed=10, param=10, mode=1)
@@ -29,13 +29,13 @@ def motor_control():
     # dr.step_angles(id_list=id_list, angle_list=[-20, -20], speed=8, param=8, mode=1)
 
     '''单个关节自适应绝对角度控制'''
-    # dr.set_angle_adaptive(id_num=id_num, angle=0, speed=10, torque=2)
+    # dr.set_angle_adaptive(id_num=id_num, angle=180, speed=2, torque=1)
 
     '''多个关节自适应绝对角度控制'''
     # dr.set_angles_adaptive(id_list=id_list, angle_list=[0, 180], speed_list=[10, 30], torque_list=[3, 2])
 
     '''单关节阻抗控制'''
-    # dr.impedance_control(id_num=id_num, angle=20, speed=2, tff=1, kp=1, kd=1, mode=1)
+    # dr.impedance_control(id_num=id_num, angle=60, speed=2, tff=-2, kp=1, kd=0.5)
 
     '''多关节阻抗控制'''
     # dr.impedance_control_multi(id_list=id_list, angle_list=[90, 100], speed_list=[2, 1], tff_list=[2, 2], kp_list=[0.1, 0.2], kd_list=[0.1, 0.2], mode=1)
