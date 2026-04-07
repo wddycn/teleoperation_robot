@@ -50,7 +50,7 @@ cmake .. \
   -DPYTHON_EXECUTABLE=$(which python)
  
 make -j8 
-make instal
+make install
 ```
 
 ### 安装casadi
@@ -65,9 +65,13 @@ conda install -c conda-forge swig blas lapack
 
 cmake .. -DCMAKE_BUILD_TYPE=Release \
     -DPYTHON_EXECUTABLE=$(which python) \
-    -DCMAKE_INSTALL_PREFIX=../miniconda3/envs/mujoco \
+    -DCMAKE_INSTALL_PREFIX=/home/ycn/miniconda3/envs/teleoperation \
     -DWITH_IPOPT=ON \
-    -DWITH_PYTHON=ON
+    -DWITH_PYTHON=ON \
+    -DWITH_BUILD_IPOPT=ON \
+    -DWITH_BUILD_MUMPS=ON \
+    -DWITH_BUILD_REQUIRED=ON
+
  
 make -j$(nproc)
 make install
