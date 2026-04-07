@@ -41,6 +41,10 @@ sudo cmake --install .
 ### 安装eigenpy
 
 ```bash
+先安装两个依赖
+conda install numpy
+conda install scipy
+再安装
 git clone https://github.com/stack-of-tasks/eigenpy.git
 cd eigenpy
 mkdir build && cd build
