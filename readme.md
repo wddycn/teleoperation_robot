@@ -62,15 +62,16 @@ mkdir build && cd build
 sudo apt install swig liblapack-dev libblas-dev -y  
 或者  
 conda install -c conda-forge swig blas lapack
-
+单独安装ipopt
+conda install -c conda-forge ipopt
+再编译，并指定ipopt地址
 cmake .. -DCMAKE_BUILD_TYPE=Release \
-    -DPYTHON_EXECUTABLE=$(which python) \
-    -DCMAKE_INSTALL_PREFIX=/home/ycn/miniconda3/envs/teleoperation \
-    -DWITH_IPOPT=ON \
-    -DWITH_PYTHON=ON \
-    -DWITH_BUILD_IPOPT=ON \
-    -DWITH_BUILD_MUMPS=ON \
-    -DWITH_BUILD_REQUIRED=ON
+  -DPYTHON_EXECUTABLE=$(which python) \
+  -DCMAKE_INSTALL_PREFIX=/home/ycn/miniconda3/envs/teleoperation \
+  -DCMAKE_PREFIX_PATH=/home/ycn/miniconda3/envs/teleoperation \
+  -DWITH_PYTHON=ON \
+  -DWITH_IPOPT=ON
+
 
  
 make -j$(nproc)
