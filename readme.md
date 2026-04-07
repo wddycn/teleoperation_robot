@@ -26,18 +26,6 @@ joystick_to_real_mujoco.py（主控函数脚本）
 
 ## 安装顺序（全部是从源码编译安装）
 
-### 安装mujoco
-```bash
-git clone https://github.com/google-deepmind/mujoco.git
-cd mujoco
-mkdir build
-cd build
-cmake ..
-cmake --build . 多线程编译使用 cmake --build . -j线程数
-cmake -DCMAKE_INSTALL_PREFIX=../miniconda3/envs/mujoco
-sudo cmake --install .
-```
-
 ### 安装eigenpy
 
 ```bash
@@ -107,6 +95,20 @@ cmake .. \
  
 make -j8
 make install
+```
+### 安装mujoco
+
+其实可以直接pip install mujoco
+用不着按照以下步骤，以下步骤只是从源码编译而已，两种不同的安装方式
+```bash
+git clone https://github.com/google-deepmind/mujoco.git
+cd mujoco
+mkdir build
+cd build
+cmake ..
+cmake --build . 多线程编译使用 cmake --build . -j线程数
+cmake -DCMAKE_INSTALL_PREFIX=../miniconda3/envs/mujoco
+sudo cmake --install .
 ```
 
 # 遥操作方案对比：MoveIt Servo vs. Pinocchio + CasADi
